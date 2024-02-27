@@ -3,7 +3,8 @@ export interface ICalculation {
   energy: number;
   environment: number;
   prosperity: number;
-  research: number;
+  environmentResearch: string;
+  energyResearch: string;
 }
 
 export interface IPlayer extends ICalculation {
@@ -16,7 +17,8 @@ export class Player implements IPlayer {
   name: string;
   capital: number;
   energy: number;
-  environment: number;
+  environmentResearch: string;
+  energyResearch: string;
   prosperity: number;
   research: number;
   color: PlayerColor;
@@ -26,11 +28,13 @@ export class Player implements IPlayer {
     this.name = name;
     this.capital = 0;
     this.energy = 0;
-    this.environment = 0;
+    this.environmentResearch = "1.1";
+    this.energyResearch = "1.1";
     this.prosperity = 0;
     this.research = 0;
     this.color = color;
   }
+  environment: number;
 }
 
 export enum PlayerColor {

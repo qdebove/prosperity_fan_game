@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import Boot from "./scenes/Boot";
 import BottomBar from "./scenes/BottomBar";
 import { MainMenu } from "./scenes/MainMenu";

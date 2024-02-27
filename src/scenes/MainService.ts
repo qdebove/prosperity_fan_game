@@ -1,16 +1,23 @@
+import { PlayerColor } from "../models/player.model";
 import { IPlayerService, PlayerService } from "../services/player.service";
 import {
   IResearchService,
   ResearchService,
 } from "../services/research.service";
 
+// TODO use rules
 export default class MainService extends Phaser.Scene {
   private readonly _researchService: IResearchService;
   private readonly _playerService: IPlayerService;
+
   constructor() {
     super("MainService");
     this._researchService = new ResearchService();
     this._playerService = new PlayerService();
+  }
+
+  preload() {
+    this._playerService.addPlayer("1", "Player 1", PlayerColor.Blue);
   }
 
   public get researchService(): IResearchService {
