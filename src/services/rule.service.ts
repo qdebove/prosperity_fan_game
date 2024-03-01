@@ -1,3 +1,5 @@
-export interface IRulesService {}
+export interface IRulesService {
+    
+}
 
 export class RulesService implements IRulesService {}

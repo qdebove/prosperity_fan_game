@@ -1,49 +1,47 @@
 import { IPlayer } from "../../models/player.model";
-import { IPlayerService } from "../../services/player.service";
-import { IResearchService } from "../../services/research.service";
+import { IGameManagerService } from "../../services/game-manager.service";
 import MainService from "../MainService";
 import PawnProvider from "../PawnProvider";
 
 export default class Research extends PawnProvider {
   private _configuration: IResearchConfiguration;
-  private _researchService: IResearchService;
-  private _playerService: IPlayerService;
   private readonly _environmentRectangles: Map<
-    string,
-    Phaser.GameObjects.Rectangle
+  string,
+  Phaser.GameObjects.Rectangle
   > = new Map();
   private readonly _energyRectangles: Map<
-    string,
-    Phaser.GameObjects.Rectangle
+  string,
+  Phaser.GameObjects.Rectangle
   > = new Map();
+
+  private _gameManagerService: IGameManagerService;
+
+  private _pawnY: number;
 
   constructor() {
     super("Research");
   }
 
   preload() {
-    this._researchService =
-      this.game.scene.getScene<MainService>("MainService").researchService;
-    this._playerService = this.game.scene.getScene<MainService>("MainService").playerService;
-    this._loadConfiguration();
+    this._configuration = this._generateConfiguration();
+    this._gameManagerService = this.game.scene.getScene<MainService>("MainService").gameManagerService;
   }
 
   create() {
     this._drawGrid();
-    const players: IPlayer[] = this._playerService.getPlayers();
+    const players: IPlayer[] = this._gameManagerService.getPlayers();
 
-    for (const player of players) {
-      const environmentResearch = player.environmentResearch;
-      const energyResearch = player.energyResearch;
+    for(let i = 0; i < players.length; i++) {
+      const player = players[i];
 
-      this._placePawn(environmentResearch, ResearchSide.Environment);
-      this._placePawn(energyResearch, ResearchSide.Energy);
+      this._placePawn(player, ResearchSide.Environment, players.length, i);
+      this._placePawn(player, ResearchSide.Energy, players.length, i);
     }
   }
 
   update() {}
 
-  private _loadConfiguration() {
+  private _generateConfiguration(): IResearchConfiguration {
     const columnWidth = this.cameras.main.width / 10;
     const rowHeight = this.cameras.main.height / 54;
     const rowSpacing = this.cameras.main.height / 54;
@@ -51,7 +49,7 @@ export default class Research extends PawnProvider {
     const startX = this.cameras.main.width / 2 - columnWidth / 2 - rowSpacing / 2;
     const startY = rowSpacing * 2;
     const totalRows = 6;
-    this._configuration = {
+    return {
       columnWidth,
       rowHeight,
       rowSpacing,
@@ -118,21 +116,53 @@ export default class Research extends PawnProvider {
     }
   }
 
-  private _placePawn(score: string, side: ResearchSide): void {
+  private _placePawn(player: IPlayer, side: ResearchSide, numberOfPawnWithSameScore: number = 2, position: number = 0): void {
     const rectangle = side === ResearchSide.Environment
-      ? this._environmentRectangles.get(score)
-      : this._energyRectangles.get(score);
+      ? this._environmentRectangles.get(player.environmentResearch)
+      : this._energyRectangles.get(player.energyResearch);
 
     if (rectangle != null) {
-      const { columnWidth, rowHeight, rowSpacing, subLevelSpacing } = this._configuration;
+      const { columnWidth, rowHeight, rowSpacing, subLevelSpacing, } = this._configuration;
 
-      const pawn = this._getPawn();
+      const pawn = this._generatePawn(player);
       const { x, y, height } = rectangle;
       
       pawn.height = height;
       pawn.width = height;
-      pawn.setPosition(x - columnWidth / 2 + pawn.width + rowSpacing / 2, y + rowHeight + subLevelSpacing + pawn.height);
+
+      const startX = x - columnWidth / 2 + pawn.width + rowSpacing / 2;
+      const pawnsWidth = pawn.width * numberOfPawnWithSameScore;
+      const totalSpaceAvailable = columnWidth - pawnsWidth;
+      const spaceBetweenPawns = totalSpaceAvailable / (numberOfPawnWithSameScore + 1);
+
+      pawn.setPosition(startX + spaceBetweenPawns + pawn.width * position + (spaceBetweenPawns * position), y + rowHeight + subLevelSpacing + pawn.height);
+
+      if(player.id === this._gameManagerService.getActivePlayer().id) {
+        this._addDragEvents(pawn, side);
+      }
     }
+  }
+
+  private _addDragEvents(pawn: Phaser.GameObjects.Shape, side: ResearchSide) {
+    pawn.setInteractive({ cursor: 'pointer' });
+    this.input.setDraggable(pawn);
+
+    // TODO add vertical limits (actions to do)
+    // TODO add memento if dragged
+    // TODO check if can play
+    this.input.on('dragstart', (_: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.Shape) => {
+      this._pawnY = gameObject.y;
+    });
+
+    this.input.on('drag', (_: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.Shape, __: number, dragY: number) => {
+      if (dragY <= this._pawnY) {
+          gameObject.y = dragY; // Only update Y position, and only if above minY
+      }
+    });
+
+    this.input.on('dragend', (_: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.Shape) => {
+      gameObject.y = this._pawnY;
+    });
   }
 }
 

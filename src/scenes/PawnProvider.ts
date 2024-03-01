@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import { IPlayer } from "../models/player.model";
 
 export default abstract class PawnProvider extends Scene {
 
@@ -6,7 +7,7 @@ export default abstract class PawnProvider extends Scene {
         super(sceneKey);
     }
 
-    protected _getPawn(): Phaser.GameObjects.Shape {
-        return this.add.rectangle(0, 0, 50, 50, 0xFF0000);
+    protected _generatePawn(player: IPlayer): Phaser.GameObjects.Shape {
+        return this.add.rectangle(0, 0, 50, 50, player.color);
     }
 }
