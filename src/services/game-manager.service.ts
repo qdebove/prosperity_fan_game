@@ -1,4 +1,4 @@
-import { IPlayer, PlayerColor } from "../models/player.model";
+import { IPlayer, Player, PlayerColor } from "../models/player.model";
 import { IPlayerService, PlayerService } from "./player.service";
 import { IResearchService, ResearchService } from "./research.service";
 
@@ -22,7 +22,8 @@ export class GameManagerService implements IGameManagerService {
     }
 
     addPlayer(id: string, name: string, color: PlayerColor): void {
-        this._playerService.addPlayer(id, name, color);
+        const player: IPlayer = new Player(id, name, color);
+        this._playerService.addPlayer(player);
     }
 
     getPlayers(): IPlayer[] {
