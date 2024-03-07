@@ -1,16 +1,16 @@
 import { IPlayer } from "../models/player.model";
 
 export interface IRulesService {
-    getNumberOfActions(): number;
-    getRemainingActions(player: IPlayer): number;
+  getNumberOfActions(): number;
+  canPlayerPlay(player: IPlayer): boolean;
 }
 
 export class RulesService implements IRulesService {
-    getNumberOfActions(): number {
-        return 2;
-    }
+  getNumberOfActions(): number {
+      return 2;
+  }
 
-    getRemainingActions(player: IPlayer): number {
-        
-    }
+  canPlayerPlay(player: IPlayer): boolean {
+      return player.remainingActions > 0;
+  }
 }

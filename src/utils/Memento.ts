@@ -1,4 +1,8 @@
-class Memento<T> {
+interface IMemento<T> {
+  getState(): T;
+}
+
+class Memento<T> implements IMemento<T> {
   private state: T;
 
   constructor(state: T) {
@@ -10,7 +14,13 @@ class Memento<T> {
   }
 }
 
-export class Originator<T> {
+export interface IOriginator<T> {
+  setState(state: T): void;
+  save(): IMemento<T>;
+  restore(memento: IMemento<T>): void;
+}
+
+export class Originator<T> implements IOriginator<T> {
   private state: T;
 
   constructor(state: T) {
@@ -21,25 +31,38 @@ export class Originator<T> {
     this.state = state;
   }
 
-  public save(): Memento<T> {
+  public save(): IMemento<T> {
     return new Memento(this.state);
   }
 
-  public restore(memento: Memento<T>): void {
+  public restore(memento: IMemento<T>): void {
     this.state = memento.getState();
   }
 }
 
-export class Caretaker<T> {
-  private mementos: Memento<T>[] = [];
+export interface ICaretaker<T> {
+  saveData(data: T): void;
+  backup(): void;
+  getMemento(index: number): IMemento<T>;
+  undo(): void;
+  deleteMemento(index: number): void;
+}
 
-  constructor(private originator: Originator<T>) {}
+export class Caretaker<T> implements ICaretaker<T> {
+  private readonly mementos: IMemento<T>[] = [];
+
+  constructor(private readonly originator: IOriginator<T>) {}
+
+  public saveData(data: T): void {
+    this.originator.setState(data);
+    this.backup();
+  }
 
   public backup(): void {
     this.mementos.push(this.originator.save());
   }
 
-  public getMemento(index: number): Memento<T> {
+  public getMemento(index: number): IMemento<T> {
     return this.mementos[index];
   }
 

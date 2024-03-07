@@ -1,11 +1,14 @@
 import { Scene } from "phaser";
 import { Calculation, getViewFromCalculation } from "../enums/calculation.enum";
 import { Events } from "../enums/events.enum";
+import { GameManagerService, IGameManagerService } from "../services/game-manager.service";
 
 export class MainMenu extends Scene {
+  private readonly _gameManagerService: IGameManagerService;
   private _calculation: string | null = null;
   constructor() {
     super("MainMenu");
+    this._gameManagerService = new GameManagerService();
   }
 
   create() {

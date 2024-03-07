@@ -37,6 +37,7 @@ export default class Research extends PawnProvider {
       this._placePawn(player, ResearchSide.Environment, players.length, i);
       this._placePawn(player, ResearchSide.Energy, players.length, i);
     }
+    console.log(this.game.registry.get("test"));
   }
 
   update() {}
@@ -60,7 +61,7 @@ export default class Research extends PawnProvider {
     };
   }
 
-  private _drawGrid() {
+  private _drawGrid(): void {
     const {
       columnWidth,
       rowHeight,
@@ -143,7 +144,7 @@ export default class Research extends PawnProvider {
     }
   }
 
-  private _addDragEvents(pawn: Phaser.GameObjects.Shape, side: ResearchSide) {
+  private _addDragEvents(pawn: Phaser.GameObjects.Shape, side: ResearchSide): void {
     pawn.setInteractive({ cursor: 'pointer' });
     this.input.setDraggable(pawn);
 
@@ -155,8 +156,10 @@ export default class Research extends PawnProvider {
     });
 
     this.input.on('drag', (_: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.Shape, __: number, dragY: number) => {
-      if (dragY <= this._pawnY) {
-          gameObject.y = dragY; // Only update Y position, and only if above minY
+      const lastRectangle = (side === ResearchSide.Environment ? this._environmentRectangles : this._energyRectangles).get(`${this._configuration.totalRows}.${this._configuration.totalRows + 1}`)!;
+        
+      if (dragY <= this._pawnY && dragY >= lastRectangle.y) {
+        gameObject.y = dragY;
       }
     });
 
