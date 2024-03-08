@@ -3,6 +3,7 @@ import { IPlayer } from "../models/player.model";
 export interface IRulesService {
   getNumberOfActions(): number;
   canPlayerPlay(player: IPlayer): boolean;
+  getMaxResearchLevel(): string;
 }
 
 export class RulesService implements IRulesService {
@@ -12,5 +13,9 @@ export class RulesService implements IRulesService {
 
   canPlayerPlay(player: IPlayer): boolean {
       return player.remainingActions > 0;
+  }
+
+  getMaxResearchLevel(): string {
+      return "6.7";
   }
 }

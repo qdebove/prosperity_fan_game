@@ -1,3 +1,4 @@
+import { ResearchSide } from "../../enums/research.enum";
 import { IPlayer } from "../../models/player.model";
 import { IGameManagerService } from "../../services/game-manager.service";
 import MainService from "../MainService";
@@ -37,7 +38,6 @@ export default class Research extends PawnProvider {
       this._placePawn(player, ResearchSide.Environment, players.length, i);
       this._placePawn(player, ResearchSide.Energy, players.length, i);
     }
-    console.log(this.game.registry.get("test"));
   }
 
   update() {}
@@ -49,6 +49,7 @@ export default class Research extends PawnProvider {
     const subLevelSpacing = rowSpacing / 2;
     const startX = this.cameras.main.width / 2 - columnWidth / 2 - rowSpacing / 2;
     const startY = rowSpacing * 2;
+    // TODO get from rules
     const totalRows = 6;
     return {
       columnWidth,
@@ -143,7 +144,7 @@ export default class Research extends PawnProvider {
       }
     }
   }
-
+// TODO add and remove event based on events
   private _addDragEvents(pawn: Phaser.GameObjects.Shape, side: ResearchSide): void {
     pawn.setInteractive({ cursor: 'pointer' });
     this.input.setDraggable(pawn);
@@ -156,22 +157,23 @@ export default class Research extends PawnProvider {
     });
 
     this.input.on('drag', (_: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.Shape, __: number, dragY: number) => {
-      const lastRectangle = (side === ResearchSide.Environment ? this._environmentRectangles : this._energyRectangles).get(`${this._configuration.totalRows}.${this._configuration.totalRows + 1}`)!;
-        
-      if (dragY <= this._pawnY && dragY >= lastRectangle.y) {
-        gameObject.y = dragY;
+      if(this._gameManagerService.canPlay()) {
+        const player: IPlayer = this._gameManagerService.getPlayer();
+        const lastRectangle = side === ResearchSide.Environment
+          ? this._environmentRectangles.get(player.environmentResearch)!
+          : this._energyRectangles.get(player.energyResearch)!;
+          
+          if (dragY <= this._pawnY && (dragY - gameObject.height) >= lastRectangle.y) {
+            gameObject.y = dragY;
+          }
       }
+        
     });
 
     this.input.on('dragend', (_: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.Shape) => {
       gameObject.y = this._pawnY;
     });
   }
-}
-
-enum ResearchSide {
-  Environment,
-  Energy,
 }
 
 interface IResearchConfiguration {

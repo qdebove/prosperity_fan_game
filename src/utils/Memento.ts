@@ -23,9 +23,7 @@ export interface IOriginator<T> {
 export class Originator<T> implements IOriginator<T> {
   private state: T;
 
-  constructor(state: T) {
-    this.state = state;
-  }
+  constructor() {}
 
   public setState(state: T): void {
     this.state = state;

@@ -16,6 +16,7 @@ export default class MainService extends Phaser.Scene {
     this._gameManagerService.addPlayer("3", "Player 3", PlayerColor.Red);
     this._gameManagerService.addPlayer("4", "Player 4", PlayerColor.Yellow);
     this._gameManagerService.setActivePlayer("1");
+    this._gameManagerService.setPlayer("1");
   }
 
   public get gameManagerService(): IGameManagerService {

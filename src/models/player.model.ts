@@ -25,18 +25,21 @@ export class Player implements IPlayer {
   prosperity: number;
   research: number;
   color: PlayerColor;
-  remainingActions: number = 0;
+  remainingActions: number;
 
   constructor(id: string, name: string, color: PlayerColor) {
     this.id = id;
     this.name = name;
     this.capital = 0;
     this.energy = 0;
+    this.environment = 0;
     this.environmentResearch = "1.1";
     this.energyResearch = "1.1";
     this.prosperity = 0;
     this.research = 0;
     this.color = color;
+    // TODO based on rules
+    this.remainingActions = 2;
   }
 }
 
