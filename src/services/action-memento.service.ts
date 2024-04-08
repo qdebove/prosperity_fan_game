@@ -22,7 +22,7 @@ export class ActionMementoService implements IActionMementoService {
 
   addAction(playerId: string, action: IActionPlayed): void {
     const careTaker = this._careTakersByPlayer.get(playerId);
-    if (careTaker) {
+    if (careTaker != null) {
       careTaker.saveData(action);
     }
   }

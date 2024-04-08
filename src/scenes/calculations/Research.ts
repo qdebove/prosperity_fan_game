@@ -17,6 +17,7 @@ export default class Research extends PawnProvider {
 
   private _gameManagerService: IGameManagerService;
 
+  private _maxLevelsAvailable: string[] = [];
   private _pawnY: number;
 
   constructor() {
@@ -87,10 +88,11 @@ export default class Research extends PawnProvider {
           rowHeight,
           color
         );
+        rectangle.setOrigin(0.5, 0.5);
         y += rowHeight + subLevelSpacing;
         //container.add(rectangle);
 
-        const key = `${levels - 1}.${j + 1}`;
+        const key = `${levels - 1}.${levels - j}`;
         if (side === ResearchSide.Environment) {
           this._environmentRectangles.set(key, rectangle);
         } else {
@@ -124,9 +126,10 @@ export default class Research extends PawnProvider {
       : this._energyRectangles.get(player.energyResearch);
 
     if (rectangle != null) {
-      const { columnWidth, rowHeight, rowSpacing, subLevelSpacing, } = this._configuration;
+      const { columnWidth, rowHeight, rowSpacing, } = this._configuration;
 
       const pawn = this._generatePawn(player);
+      pawn.setOrigin(0.5, 0.5);
       const { x, y, height } = rectangle;
       
       pawn.height = height;
@@ -137,8 +140,8 @@ export default class Research extends PawnProvider {
       const totalSpaceAvailable = columnWidth - pawnsWidth;
       const spaceBetweenPawns = totalSpaceAvailable / (numberOfPawnWithSameScore + 1);
 
-      pawn.setPosition(startX + spaceBetweenPawns + pawn.width * position + (spaceBetweenPawns * position), y + rowHeight + subLevelSpacing + pawn.height);
-
+      pawn.setPosition(startX + spaceBetweenPawns + pawn.width * position + (spaceBetweenPawns * position), y + rowHeight);
+      console.log(pawn.y);
       if(player.id === this._gameManagerService.getActivePlayer().id) {
         this._addDragEvents(pawn, side);
       }
@@ -154,24 +157,45 @@ export default class Research extends PawnProvider {
     // TODO check if can play
     this.input.on('dragstart', (_: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.Shape) => {
       this._pawnY = gameObject.y;
+      this._maxLevelsAvailable = this._gameManagerService.getMaxSearchLevelAvailable(this._gameManagerService.getPlayer(), side);
     });
-
+      // TODO lastResearchAvailable can be undefined
+      // TODO offset for mini pixel missing
     this.input.on('drag', (_: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.Shape, __: number, dragY: number) => {
       if(this._gameManagerService.canPlay()) {
-        const player: IPlayer = this._gameManagerService.getPlayer();
+        const lastResearchAvailable = this._maxLevelsAvailable[this._maxLevelsAvailable.length - 1];
         const lastRectangle = side === ResearchSide.Environment
-          ? this._environmentRectangles.get(player.environmentResearch)!
-          : this._energyRectangles.get(player.energyResearch)!;
-          
-          if (dragY <= this._pawnY && (dragY - gameObject.height) >= lastRectangle.y) {
-            gameObject.y = dragY;
-          }
+          ? this._environmentRectangles.get(lastResearchAvailable)!
+          : this._energyRectangles.get(lastResearchAvailable)!;
+        if (dragY  <= this._pawnY && (dragY - gameObject.displayHeight) >= lastRectangle.y) {
+          gameObject.y = dragY;
+        }
       }
         
     });
-
+// TODO differency the pawn type !!
     this.input.on('dragend', (_: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.Shape) => {
+      const contains: {level: string, contain: boolean}[] = this._maxLevelsAvailable.map((level) => {
+        const rectangle = side === ResearchSide.Environment
+          ? this._environmentRectangles.get(level)
+          : this._energyRectangles.get(level);
+        return {
+          level, contain: rectangle!.getBounds().contains(gameObject.x, gameObject.y - gameObject.height)
+        };
+      }).filter(({contain}) => contain);
+
+      if(contains.length === 1) {
+        const {rowHeight} = this._configuration;
+        const {level} = contains[0];
+        //this._gameManagerService.updateResearch(this._gameManagerService.getPlayer(), side, level);
+        const rectangle = side === ResearchSide.Environment
+          ? this._environmentRectangles.get(level)
+          : this._energyRectangles.get(level);
+          this._pawnY = rectangle!.y + rectangle!.height;
+      }
+      
       gameObject.y = this._pawnY;
+      this._maxLevelsAvailable = [];
     });
   }
 }
@@ -184,4 +208,8 @@ interface IResearchConfiguration {
   startX: number;
   startY: number;
   totalRows: number;
+}
+
+interface IDragData {
+  
 }
